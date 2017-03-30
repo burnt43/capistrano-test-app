@@ -1,16 +1,17 @@
-# config valid only for Capistrano 3.1
+# config valid only for current version of Capistrano
 lock '3.3.5'
 
 set :application, 'capistrano-test-app'
-set :repo_url,    'git@github.com:monmouthtelecom/hosted.git'
+set :repo_url,    'git@github.com:burnt43/capistrano-test-app.git'
 set :branch,      'master'
-set :deploy_to,   '/home/jcarson/tmp'
+set :deploy_to,   '/home/jcarson/tmp/capistrano-test-app'
+set :default_env, { path: "/home/jcarson/ruby-2.3.3/bin/:$PATH" }
 
 # Default branch is :master
 # ask :branch, proc { `git rev-parse --abbrev-ref HEAD`.chomp }.call
 
-# Default deploy_to directory is /var/www/my_app
-# set :deploy_to, '/var/www/rails/'
+# Default deploy_to directory is /var/www/my_app_name
+# set :deploy_to, '/var/www/my_app_name'
 
 # Default value for :scm is :git
 # set :scm, :git
@@ -25,10 +26,10 @@ set :deploy_to,   '/home/jcarson/tmp'
 # set :pty, true
 
 # Default value for :linked_files is []
-# set :linked_files, %w{config/database.yml}
+# set :linked_files, fetch(:linked_files, []).push('config/database.yml')
 
 # Default value for linked_dirs is []
-# set :linked_dirs, %w{bin log tmp/pids tmp/cache tmp/sockets vendor/bundle public/system}
+# set :linked_dirs, fetch(:linked_dirs, []).push('bin', 'log', 'tmp/pids', 'tmp/cache', 'tmp/sockets', 'vendor/bundle', 'public/system')
 
 # Default value for default_env is {}
 # set :default_env, { path: "/opt/ruby/bin:$PATH" }
@@ -37,50 +38,17 @@ set :deploy_to,   '/home/jcarson/tmp'
 # set :keep_releases, 5
 
 namespace :deploy do
-
   namespace :assets do
     task :precompile do
       on roles(fetch(:assets_roles)) do
         within release_path.join(fetch(:rails_app_dir)) do
           with rails_env: fetch(:rails_env) do
-            execute :rake, "assets:precompile"
-          end
-        end
-      end
-    end
-  end
-  
-  namespace :db do
-    task :migrate do
-      on roles(:active) do
-        within release_path.join(fetch(:rails_app_dir)) do
-          with rails_env: fetch(:rails_env) do
-            execute :rake, "db:migrate"
+            execute :rake, 'foobar'
           end
         end
       end
     end
   end
 
-  desc 'Restart application'
-  task :restart do
-    on roles(:active) do
-      execute 'mkdir ' + release_path.join('hpbxgui/tmp').to_s unless Dir.exists?(release_path.join('hpbxgui/tmp'))
-      execute :touch, release_path.join('hpbxgui/tmp/restart.txt')
-    end
-  end
-
-  #after :publishing,         'assets:precompile'
-  #after 'assets:precompile', 'db:migrate'
-  #after 'db:migrate',        :restart
-
-  after :restart, :clear_cache do
-    on roles(:web), in: :groups, limit: 3, wait: 10 do
-      # Here we can do anything such as:
-      # within release_path do
-      #   execute :rake, 'cache:clear'
-      # end
-    end
-  end
-
+  after :publishing, 'assets:precompile'
 end

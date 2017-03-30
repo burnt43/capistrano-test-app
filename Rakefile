@@ -1,0 +1,2 @@
+task :foobar do
+end
